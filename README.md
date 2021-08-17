@@ -25,7 +25,7 @@ dependencies {
 ## Basic Usage
 **Step 1.** Add **SlideToggleView** into your layout
 ```xml
-      <cn.onlyloveyd.slidetoggleview.SlideToggleView
+      <cn.onlyloveyd.slidetoggleview.SlideToggleViewTest
             android:id="@+id/slideToggleView"
             android:layout_width="match_parent"
             android:layout_height="56dp"

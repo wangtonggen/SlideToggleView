@@ -28,23 +28,23 @@
             app:shimmer_duration="2000" />
 
 
-        <cn.onlyloveyd.slidetoggleview.SlideToggleView
+        <cn.onlyloveyd.slidetoggleview.SlideToggleViewTest
             android:id="@+id/slideToggleView"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="40dp"
-            android:background="@drawable/slide_bg"
-            app:stv_blockBottomMargin="2dp"
-            app:stv_blockLeftMargin="2dp"
-            app:stv_blockRightMargin="2dp"
-            app:stv_blockTopMargin="3dp"
-            app:stv_remain="80dp"
-            app:stv_slideBlock="@drawable/slide_block"
-            app:stv_text="Slide To Unlock" />
+            android:background="@drawable/shape_test1"
+            app:stv_remain="200dp"
+            app:stv_shimmer_need="false"
+            app:stv_type="TEXTVIEW"
+            app:stv_unlock_drawable_need="true"
+            app:stv_unlock_drawable="@drawable/shape_test"
+            app:stv_slideBlock="@drawable/shape_test2"
+            app:stv_text="右滑解锁" />
 
         <cn.onlyloveyd.slidetoggleview.SlideToggleView
             android:id="@+id/slideToggleView2"
-            android:layout_width="match_parent"
+            android:layout_width="80dp"
             android:layout_height="40dp"
             android:layout_marginTop="40dp"
             android:background="@drawable/slide_rect_bg"
@@ -56,7 +56,7 @@
             app:stv_slideBlock="@drawable/slide_two"
             app:stv_text="滑块2" />
 
-        <cn.onlyloveyd.slidetoggleview.SlideToggleView
+        <cn.onlyloveyd.slidetoggleview.SlideToggleViewTest
             android:id="@+id/slideToggleView3"
             android:layout_width="match_parent"
             android:layout_height="40dp"

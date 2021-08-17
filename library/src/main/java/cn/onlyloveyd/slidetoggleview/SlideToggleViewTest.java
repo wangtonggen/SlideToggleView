@@ -2,16 +2,19 @@ package cn.onlyloveyd.slidetoggleview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.ViewDragHelper;
+import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -20,10 +23,12 @@ import cn.onlyloveyd.slidetoggleview.ext.DisplayUtils;
 import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
 
 /**
-* author: wtg
-* time: 2021/8/17
-* desc: 
-*/public class SlideToggleView extends FrameLayout {
+ * 滑动开关
+ *
+ * @author jiang
+ * @date 2019/1/7
+ */
+public class SlideToggleViewTest extends FrameLayout {
 
     private ViewDragHelper mViewDragHelper;
     /**
@@ -35,6 +40,13 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
      * 滑块
      */
     private ImageView mBlockView;
+
+    private AppCompatTextView mBlockTextView;
+    private AppCompatTextView mBlockBGTextView;
+
+    private int stv_type = 1;
+
+    private boolean stv_unlock_color_need = true;
 
     /**
      * 滑块外边距
@@ -54,7 +66,7 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
     private ViewDragHelper.Callback mDragCallback = new ViewDragHelper.Callback() {
         @Override
         public boolean tryCaptureView(@NonNull View view, int i) {
-            return view == mBlockView;
+            return (view == mBlockView || view == mBlockTextView);
         }
 
         @Override
@@ -71,8 +83,9 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
             if (left < min) {
                 left = min;
             }
-            int max = getMeasuredWidth() - getPaddingRight() - mBlockRightMargin
-                    - mBlockView.getMeasuredWidth();
+            int width = getMeasuredWidth();
+            int paddingRight = getPaddingRight();
+            int max = width - paddingRight - mBlockRightMargin - (stv_type == 0 ? mBlockView.getMeasuredWidth() : mBlockTextView.getMeasuredWidth());
             if (left > max) {
                 left = max;
             }
@@ -86,27 +99,27 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
 
         @Override
         public void onViewPositionChanged(@NonNull View changedView, int left, int top, int dx, int dy) {
-            Log.e("onViewPositionChanged", left + "---" + top);
             if (mSlideToggleListener != null) {
-                int total = getMeasuredWidth() - getPaddingLeft() - getPaddingRight() - mBlockLeftMargin - mBlockRightMargin - mBlockView.getMeasuredWidth();
+//                Log.e("onViewPositionChanged", left + "---" + top+"---"+dx+"---"+left);
+                int total = getMeasuredWidth() - getPaddingLeft() - getPaddingRight() - mBlockLeftMargin
+                        - mBlockRightMargin - (stv_type == 0 ? mBlockView.getMeasuredWidth() : mBlockTextView.getMeasuredWidth());
                 int slide = left - getPaddingLeft() - mBlockLeftMargin;
-                mSlideToggleListener.onBlockPositionChanged(SlideToggleView.this, left, total,
+                mSlideToggleListener.onBlockPositionChanged(SlideToggleViewTest.this, left, total,
                         slide);
             }
         }
 
         @Override
         public void onViewReleased(@NonNull View releasedChild, float xvel, float yvel) {
-            if (releasedChild == mBlockView) {
-                int total =
-                        getMeasuredWidth() - getPaddingLeft() - getPaddingRight() - mBlockLeftMargin
-                                - mBlockRightMargin - mBlockView.getMeasuredWidth();
+            if (releasedChild == mBlockView || releasedChild == mBlockTextView) {
+//                Log.e("onViewReleased", xvel + "---" + yvel);
+                int total = getMeasuredWidth() - getPaddingLeft() - getPaddingRight() - mBlockLeftMargin
+                        - mBlockRightMargin - (stv_type == 0 ? mBlockView.getMeasuredWidth() : mBlockTextView.getMeasuredWidth());
                 int slide = releasedChild.getLeft() - getPaddingLeft() - mBlockLeftMargin;
                 if (total - slide <= mRemainDistance) {
                     openToggle();
-
                     if (mSlideToggleListener != null) {
-                        mSlideToggleListener.onSlideOpen(SlideToggleView.this);
+                        mSlideToggleListener.onSlideOpen(SlideToggleViewTest.this);
                     }
                 } else {
                     int finalLeft = getPaddingLeft() + mBlockLeftMargin;
@@ -118,16 +131,16 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
         }
     };
 
-    public SlideToggleView(@NonNull Context context) {
+    public SlideToggleViewTest(@NonNull Context context) {
         this(context, null);
     }
 
-    public SlideToggleView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public SlideToggleViewTest(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public SlideToggleView(@NonNull Context context, @Nullable AttributeSet attrs,
-                           int defStyleAttr) {
+    public SlideToggleViewTest(@NonNull Context context, @Nullable AttributeSet attrs,
+                               int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView(context, attrs, defStyleAttr);
         mViewDragHelper = ViewDragHelper.create(this, 1.0f, mDragCallback);
@@ -142,35 +155,84 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
                 DisplayUtils.dp2px(context, 14));
         Drawable slideBlock = a.getDrawable(R.styleable.SlideToggleView_stv_slideBlock);
         mBlockLeftMargin = a.getDimensionPixelSize(R.styleable.SlideToggleView_stv_blockLeftMargin,
-                4);
+                0);
         mBlockRightMargin = a.getDimensionPixelSize(
-                R.styleable.SlideToggleView_stv_blockRightMargin, 4);
+                R.styleable.SlideToggleView_stv_blockRightMargin, 0);
         mBlockTopMargin = a.getDimensionPixelSize(R.styleable.SlideToggleView_stv_blockTopMargin,
-                4);
+                0);
         mBlockBottomMargin = a.getDimensionPixelSize(
-                R.styleable.SlideToggleView_stv_blockBottomMargin, 4);
-        mRemainDistance = a.getDimensionPixelSize(R.styleable.SlideToggleView_stv_remain, 10);
+                R.styleable.SlideToggleView_stv_blockBottomMargin, 0);
+        mRemainDistance = a.getDimensionPixelSize(R.styleable.SlideToggleView_stv_remain, 200);
+        boolean stv_text_need = a.getBoolean(R.styleable.SlideToggleView_stv_text_need, false);
+        boolean stv_shimmer_need = a.getBoolean(R.styleable.SlideToggleView_stv_shimmer_need, false);
+        stv_unlock_color_need = a.getBoolean(R.styleable.SlideToggleView_stv_unlock_drawable_need, true);
+        int stv_type = a.getInt(R.styleable.SlideToggleView_stv_type, 1);
+        Drawable stv_unlock_color = a.getDrawable(R.styleable.SlideToggleView_stv_unlock_drawable);
 
         a.recycle();
 
-        LayoutParams textParams = new LayoutParams(LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT);
-        textParams.gravity = Gravity.CENTER;
-        mShimmerTextView = new ShimmerTextView(context);
-        mShimmerTextView.setText(text);
-        mShimmerTextView.setTextColor(textColor);
-        mShimmerTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-        addView(mShimmerTextView, textParams);
+        if (stv_shimmer_need) {
+            LayoutParams textParams = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT);
+            textParams.gravity = Gravity.CENTER;
+            mShimmerTextView = new ShimmerTextView(context);
+            mShimmerTextView.setText(text);
+            mShimmerTextView.setTextColor(textColor);
+            mShimmerTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+            addView(mShimmerTextView, textParams);
+        }
+        if (stv_type == 0) {
+            mBlockView = new ImageView(context);
+            mBlockView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            mBlockView.setImageDrawable(slideBlock);
+            LayoutParams blockParams = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.MATCH_PARENT);
+            blockParams.setMargins(mBlockLeftMargin, mBlockTopMargin, mBlockRightMargin,
+                    mBlockBottomMargin);
+            addView(mBlockView, blockParams);
+        } else {
+            if (stv_unlock_color_need) {
+                mBlockBGTextView = new AppCompatTextView(context);
+                mBlockBGTextView.setBackground(stv_unlock_color);
+                LayoutParams blockParams1 = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                        LayoutParams.MATCH_PARENT);
+                blockParams1.width = 200;
+                blockParams1.setMargins(mBlockLeftMargin, mBlockTopMargin, mBlockRightMargin,
+                        mBlockBottomMargin);
+                addView(mBlockBGTextView, blockParams1);
+            }
 
+            mBlockTextView = new AppCompatTextView(context);
+            mBlockTextView.setText(text);
+            mBlockTextView.setTextColor(Color.WHITE);
+            mBlockTextView.setGravity(Gravity.CENTER);
+            mBlockTextView.setBackground(slideBlock);
+            LayoutParams blockParams = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.MATCH_PARENT);
+            blockParams.width = 200;
+            blockParams.setMargins(mBlockLeftMargin, mBlockTopMargin, mBlockRightMargin,
+                    mBlockBottomMargin);
+            addView(mBlockTextView, blockParams);
+        }
 
-        mBlockView = new ImageView(context);
-        mBlockView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        mBlockView.setImageDrawable(slideBlock);
-        LayoutParams blockParams = new LayoutParams(LayoutParams.WRAP_CONTENT,
-                LayoutParams.MATCH_PARENT);
-        blockParams.setMargins(mBlockLeftMargin, mBlockTopMargin, mBlockRightMargin,
-                mBlockBottomMargin);
-        addView(mBlockView, blockParams);
+    }
+
+    public void setSlideText(String text) {
+        if (mBlockTextView != null) {
+            mBlockTextView.setText(text);
+        }
+    }
+
+    public void setSlideTextColor(int textColor) {
+        if (mBlockTextView != null) {
+            mBlockTextView.setTextColor(textColor);
+        }
+    }
+
+    public void setSlideTextSize(float textSize) {
+        if (mBlockTextView != null) {
+            mBlockTextView.setTextSize(textSize);
+        }
     }
 
     /**
@@ -181,6 +243,7 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
     public void setText(String text) {
         mShimmerTextView.setText(text);
     }
+
 
     /**
      * 设置文字颜色
@@ -271,9 +334,9 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
      */
     public void openToggle() {
         int finalLeft = getMeasuredWidth() - getPaddingRight() - mBlockRightMargin
-                - mBlockView.getMeasuredWidth();
+                - (stv_type == 0 ? mBlockView.getMeasuredWidth() : mBlockTextView.getMeasuredWidth());
         int finalTop = getPaddingTop() + mBlockTopMargin;
-        mViewDragHelper.smoothSlideViewTo(mBlockView, finalLeft, finalTop);
+        mViewDragHelper.smoothSlideViewTo(stv_type == 0 ? mBlockView : mBlockTextView, finalLeft, finalTop);
         invalidate();
     }
 
@@ -283,8 +346,20 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
     public void closeToggle() {
         int finalLeft = getPaddingLeft() + mBlockLeftMargin;
         int finalTop = getPaddingTop() + mBlockTopMargin;
-        mViewDragHelper.smoothSlideViewTo(mBlockView, finalLeft, finalTop);
+        mViewDragHelper.smoothSlideViewTo(stv_type == 0 ? mBlockView : mBlockTextView, finalLeft, finalTop);
         invalidate();
+    }
+
+    public AppCompatTextView getmBlockBGTextView() {
+        return mBlockBGTextView;
+    }
+
+    public int getStv_type() {
+        return stv_type;
+    }
+
+    public boolean isStv_unlock_color_need() {
+        return stv_unlock_color_need;
     }
 
     public interface SlideToggleListener {
@@ -295,11 +370,11 @@ import cn.onlyloveyd.slidetoggleview.shimmer.ShimmerTextView;
          * @param total 滑块可以滑动的总距离
          * @param slide 滑块已经滑动的距离
          */
-        void onBlockPositionChanged(SlideToggleView view, int left, int total, int slide);
+        void onBlockPositionChanged(SlideToggleViewTest view, int left, int total, int slide);
 
         /**
          * 滑动打开
          */
-        void onSlideOpen(SlideToggleView view);
+        void onSlideOpen(SlideToggleViewTest view);
     }
 }

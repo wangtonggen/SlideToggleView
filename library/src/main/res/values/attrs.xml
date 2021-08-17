@@ -10,6 +10,14 @@
         <attr name="stv_blockTopMargin" format="dimension"/>
         <attr name="stv_blockBottomMargin" format="dimension"/>
         <attr name="stv_remain" format="dimension"/>
+        <attr name="stv_shimmer_need" format="boolean"/><!--是否需要shimmer-->
+        <attr name="stv_text_need" format="boolean"/><!--是否需要中间文字-->
+        <attr name="stv_type">
+            <enum name="IMAGE" value="0"/><!--图片解锁-->
+            <enum name="TEXTVIEW" value="1"/><!--文本view-->
+        </attr>
+        <attr name="stv_unlock_drawable" format="color"/><!--绘制背景颜色-->
+        <attr name="stv_unlock_drawable_need" format="boolean"/><!--是否需要绘制解锁后的背景-->
     </declare-styleable>
 
     <attr name="shimmer_clip_to_children" format="boolean"/>
